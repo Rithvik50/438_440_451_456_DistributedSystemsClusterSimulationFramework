@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-const API_SERVER = 'http://host.docker.internal:3000';
+const API_SERVER = 'http://host.docker.internal:3000'; // or your host machine IP
 
 function startHeartbeat(nodeId) {
   setInterval(async () => {
@@ -10,7 +10,7 @@ function startHeartbeat(nodeId) {
     } catch (err) {
       console.error('Heartbeat failed:', err.message);
     }
-  }, 5000);
+  }, 5000); // every 5 seconds
 }
 
-module.exports = { startHeartbeat };
+module.exports = { startHeartbeat };

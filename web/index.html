@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kube-Sim Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Kube-Sim Dashboard</h1>
+
+    <div class="controls">
+      <div class="control-group">
+        <h2>Add Node</h2>
+        <input type="number" id="cpuCores" placeholder="CPU Cores" min="1" />
+        <button onclick="addNode()">Add Node</button>
+      </div>
+
+      <div class="control-group">
+        <h2>Launch Pod</h2>
+        <input type="number" id="cpuRequired" placeholder="CPU Required" min="1" />
+        <button onclick="launchPod()">Launch Pod</button>
+      </div>
+    </div>
+
+    <div class="nodes-container">
+      <h2>Nodes</h2>
+      <div id="nodes"></div>
+    </div>
+
+    <div class="heartbeat-monitor">
+      <!--<h2>Heartbeat Monitor</h2>-->
+      <canvas id="heartbeatChart"></canvas>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

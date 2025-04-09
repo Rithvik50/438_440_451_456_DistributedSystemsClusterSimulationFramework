@@ -4,36 +4,57 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kube-Sim Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>Kube-Sim Dashboard</h1>
+    <header>
+      <h1>Kube-Sim Dashboard</h1>
+      <p class="subtitle">Distributed Systems Cluster Management</p>
+    </header>
 
     <div class="controls">
       <div class="control-group">
         <h2>Add Node</h2>
-        <input type="number" id="cpuCores" placeholder="CPU Cores" min="1" />
+        <div class="input-group">
+          <label for="cpuCores">CPU Cores</label>
+          <input type="number" id="cpuCores" placeholder="Enter number of CPU cores" min="1" />
+        </div>
         <button onclick="addNode()">Add Node</button>
       </div>
 
       <div class="control-group">
         <h2>Launch Pod</h2>
-        <input type="number" id="cpuRequired" placeholder="CPU Required" min="1" />
+        <div class="input-group">
+          <label for="cpuRequired">CPU Required</label>
+          <input type="number" id="cpuRequired" placeholder="Enter CPU requirements" min="1" />
+        </div>
         <button onclick="launchPod()">Launch Pod</button>
       </div>
     </div>
 
-    <div class="nodes-container">
-      <h2>Nodes</h2>
-      <div id="nodes"></div>
-    </div>
+    <main class="nodes-container">
+      <div class="section-header">
+        <h2>Cluster Nodes</h2>
+        <div class="stats">
+          <div class="stat-item">
+            <span class="stat-label">Total Nodes</span>
+            <span class="stat-value" id="totalNodes">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Active Pods</span>
+            <span class="stat-value" id="totalPods">0</span>
+          </div>
+        </div>
+      </div>
+      <div id="nodes" class="nodes-grid"></div>
+    </main>
 
-    <div class="heartbeat-monitor">
-      <!--<h2>Heartbeat Monitor</h2>-->
-      <canvas id="heartbeatChart"></canvas>
-    </div>
+    <footer>
+      <p>Kube-Sim - A Distributed Systems Cluster Simulation Framework</p>
+    </footer>
   </div>
 
   <script src="script.js"></script>

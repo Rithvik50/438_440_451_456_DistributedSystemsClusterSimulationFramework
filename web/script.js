@@ -108,11 +108,21 @@ function updateHeartbeatGraph(nodeId, isActive) {
     chart.update('none');
 }
 
+// Update statistics
+function updateStats(nodes) {
+    const totalNodes = Object.keys(nodes).length;
+    const totalPods = Object.values(nodes).reduce((sum, node) => sum + node.pods.length, 0);
+    
+    document.getElementById('totalNodes').textContent = totalNodes;
+    document.getElementById('totalPods').textContent = totalPods;
+}
+
 async function fetchNodes() {
     try {
         const response = await fetch(`${API_BASE_URL}/nodes`);
         const nodes = await response.json();
         displayNodes(nodes);
+        updateStats(nodes);
     } catch (error) {
         console.error('Error fetching nodes:', error);
     }
@@ -132,13 +142,10 @@ function displayNodes(nodes) {
         const isActive = timeSinceHeartbeat < 20;
         const heartbeatClass = isActive ? 'heartbeat-active' : 'heartbeat-inactive';
         
-        // Create or get heartbeat monitor
-        let heartbeatMonitor = nodeElement.querySelector('.heartbeat-monitor');
-        if (!heartbeatMonitor) {
-            heartbeatMonitor = document.createElement('div');
-            heartbeatMonitor.className = 'heartbeat-monitor';
-            heartbeatMonitor.appendChild(createHeartbeatChart(id));
-        }
+        // Create heartbeat monitor
+        const heartbeatMonitor = document.createElement('div');
+        heartbeatMonitor.className = 'heartbeat-monitor';
+        heartbeatMonitor.appendChild(createHeartbeatChart(id));
         
         // Update heartbeat graph
         updateHeartbeatGraph(id, isActive);
@@ -312,8 +319,6 @@ async function deletePod(podId) {
     }
 }
 
-// Initial load
-fetchNodes();
-
-// Refresh nodes every 1000ms for smoother animation
-setInterval(fetchNodes, 1000);
+// Start periodic updates
+setInterval(fetchNodes, 5000);
+fetchNodes(); // Initial fetch

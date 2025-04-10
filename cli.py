@@ -44,7 +44,7 @@ def stop_node(node_id):
 def delete_node(node_id):
     try:
         response = requests.delete(
-            f"{API_BASE_URL}/nodes/{node_id}/delete”,
+            f"{API_BASE_URL}/nodes/{node_id}/delete",
             timeout=10
         )
         

@@ -32,8 +32,7 @@ A lightweight, simulation-based distributed system that mimics core Kubernetes c
 ### 1. Start the API Server
 
 ```bash
-cd server
-python server.py
+PYTHONPATH=/opt/homebrew/lib/python3.11/site-packages:$PYTHONPATH python server/server.py
 ```
 
 ### 2. Start a Node Simulator

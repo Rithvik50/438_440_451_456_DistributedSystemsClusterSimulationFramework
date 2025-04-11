@@ -7,11 +7,10 @@ function createHeartbeatChart(nodeId) {
     const canvas = document.createElement('canvas');
     canvas.className = 'heartbeat-chart';
     
-    // Create a simple heartbeat pattern with sharp peaks
+    // Create initial data with more points for smoother animation
     const generateECGData = () => {
         const data = [];
-        const points = 100;
-        
+        const points = 200; // Increased points for smoother animation
         for (let i = 0; i < points; i++) {
             data.push(0.5); // Flat baseline
         }
@@ -19,12 +18,12 @@ function createHeartbeatChart(nodeId) {
     };
     
     const data = {
-        labels: Array(100).fill(''),
+        labels: Array(200).fill(''),
         datasets: [{
             data: generateECGData(),
             borderColor: '#28a745',
             backgroundColor: 'rgba(40, 167, 69, 0.1)',
-            tension: 0,
+            tension: 0.4, // Slightly curved lines
             pointRadius: 0,
             borderWidth: 2,
             fill: true
@@ -66,7 +65,8 @@ function createHeartbeatChart(nodeId) {
     nodeCharts[nodeId] = { 
         chart, 
         data,
-        position: 0 // Add position tracker for continuous movement
+        position: 0,
+        lastUpdate: Date.now()
     };
     return canvas;
 }
@@ -74,15 +74,17 @@ function createHeartbeatChart(nodeId) {
 function updateHeartbeatGraph(nodeId, isActive) {
     if (!nodeCharts[nodeId]) return;
 
-    const { chart, data, position } = nodeCharts[nodeId];
+    const { chart, data, position, lastUpdate } = nodeCharts[nodeId];
+    const now = Date.now();
+    const timeDiff = now - lastUpdate;
     
     if (isActive) {
-        const newData = Array(100).fill(0.5);
+        // Create a continuous moving pattern
+        const newData = Array(200).fill(0.5);
         
-        // Create the heartbeat pattern
+        // Add multiple heartbeats at different positions
         const createHeartbeat = (startPosition) => {
-            // Only draw the heartbeat if it would be visible
-            if (startPosition >= 0 && startPosition < 100) {
+            if (startPosition >= 0 && startPosition < 200) {
                 newData[startPosition] = 0.5;     // Start at baseline
                 newData[startPosition + 1] = 1.0;  // Sharp up
                 newData[startPosition + 2] = 0.6;  // First down
@@ -90,19 +92,20 @@ function updateHeartbeatGraph(nodeId, isActive) {
             }
         };
 
-        // Add heartbeats based on the current position
+        // Add heartbeats at different positions for continuous movement
         createHeartbeat(position);
-        createHeartbeat(position + 25);
         createHeartbeat(position + 50);
-        createHeartbeat(position + 75);
+        createHeartbeat(position + 100);
+        createHeartbeat(position + 150);
 
         // Update position for next frame
-        nodeCharts[nodeId].position = (position + 1) % 25;
+        nodeCharts[nodeId].position = (position + 1) % 50;
+        nodeCharts[nodeId].lastUpdate = now;
         
         data.datasets[0].data = newData;
     } else {
         // Show flat line when inactive
-        data.datasets[0].data = Array(100).fill(0.5);
+        data.datasets[0].data = Array(200).fill(0.5);
     }
     
     chart.update('none');
@@ -320,5 +323,13 @@ async function deletePod(podId) {
 }
 
 // Start periodic updates
-setInterval(fetchNodes, 5000);
+setInterval(() => {
+    Object.keys(nodeCharts).forEach(nodeId => {
+        const node = document.querySelector(`.node[data-node-id="${nodeId}"]`);
+        if (node) {
+            const isActive = node.querySelector('.heartbeat-active') !== null;
+            updateHeartbeatGraph(nodeId, isActive);
+        }
+    });
+}, 50); // Update every 50ms for smoother animation
 fetchNodes(); // Initial fetch

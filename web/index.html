@@ -33,6 +33,18 @@
         </div>
         <button onclick="launchPod()">Launch Pod</button>
       </div>
+
+      <div class="control-group">
+        <h2>Scheduling Algorithm</h2>
+        <div class="input-group">
+          <label for="scheduler">Select Algorithm</label>
+          <select id="scheduler" onchange="changeScheduler()">
+            <option value="first-fit">First Fit</option>
+            <option value="best-fit">Best Fit</option>
+            <option value="worst-fit">Worst Fit</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <main class="nodes-container">

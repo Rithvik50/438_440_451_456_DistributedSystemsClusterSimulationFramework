@@ -353,6 +353,50 @@ async function deletePod(podId) {
     }
 }
 
+// Add function to fetch current scheduler
+async function fetchScheduler() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/scheduler`);
+        const data = await response.json();
+        document.getElementById('scheduler').value = data.scheduler;
+    } catch (error) {
+        console.error('Error fetching scheduler:', error);
+    }
+}
+
+// Add function to change scheduler
+async function changeScheduler() {
+    const scheduler = document.getElementById('scheduler').value;
+    try {
+        const response = await fetch(`${API_BASE_URL}/scheduler`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ scheduler }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert(`Scheduling algorithm changed to ${data.scheduler}`);
+        } else {
+            const error = await response.json();
+            alert(`Failed to change scheduler: ${error.error}`);
+        }
+    } catch (error) {
+        console.error('Error changing scheduler:', error);
+        alert('Failed to change scheduler');
+    }
+}
+
+// Update the initial fetch to include scheduler
+async function initialFetch() {
+    await Promise.all([
+        fetchNodes(),
+        fetchScheduler()
+    ]);
+}
+
 // Start periodic updates
 setInterval(fetchNodes, 5000);
-fetchNodes(); // Initial fetch
+initialFetch(); // Initial fetch

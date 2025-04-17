@@ -335,4 +335,26 @@ footer {
     color: var(--gray-600);
     font-size: 0.875rem;
 }
+
+select {
+    width: 100%;
+    padding: 0.75rem;
+    margin: 0.5rem 0 1rem;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+}
+
+select:hover {
+    border-color: var(--primary-color);
+}
   

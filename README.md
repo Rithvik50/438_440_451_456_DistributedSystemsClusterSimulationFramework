@@ -40,7 +40,6 @@ PYTHONPATH=/opt/homebrew/lib/python3.11/site-packages:$PYTHONPATH python server/
 ```bash
 cd node_sim
 docker build -t kube-sim-node .
-# The node ID and CPU cores will be automatically assigned when adding nodes through CLI or web interface
 ```
 
 ### 3. Access the Web Interface

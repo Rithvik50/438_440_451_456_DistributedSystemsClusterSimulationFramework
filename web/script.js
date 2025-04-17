@@ -128,13 +128,33 @@ async function fetchNodes() {
     }
 }
 
-function displayNodes(nodes) {
+// Add function to fetch pod details
+async function fetchPods() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/pods`);
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching pods:', error);
+        return [];
+    }
+}
+
+// Update displayNodes to include pod details
+async function displayNodes(nodes) {
     const nodesContainer = document.getElementById('nodes');
     nodesContainer.innerHTML = '';
+
+    // Fetch pod details
+    const pods = await fetchPods();
+    const podsMap = {};
+    pods.forEach(pod => {
+        podsMap[pod.id] = pod;
+    });
 
     Object.entries(nodes).forEach(([id, node]) => {
         const nodeElement = document.createElement('div');
         nodeElement.className = `node ${node.health_status.toLowerCase()}`;
+        nodeElement.setAttribute('data-node-id', id);
         
         // Calculate time since last heartbeat
         const lastHeartbeat = new Date(node.last_heartbeat * 1000);
@@ -150,16 +170,30 @@ function displayNodes(nodes) {
         // Update heartbeat graph
         updateHeartbeatGraph(id, isActive);
         
-        // Create pods list
-        const podsList = node.pods.map(podId => `
-            <div class="pod-item">
-                <span>Pod ${podId}</span>
-                <button onclick="deletePod('${podId}')" class="delete-btn">Delete</button>
-            </div>
-        `).join('');
+        // Create pods list with detailed information
+        const podsList = node.pods.map(podId => {
+            const pod = podsMap[podId];
+            if (!pod) return '';
+
+            const podStatus = pod.status === "Running" ? "pod-running" : "pod-failed";
+            const rescheduledInfo = pod.last_updated > pod.created_at ? 
+                `<span class="pod-rescheduled">Rescheduled</span>` : '';
+            
+            return `
+                <div class="pod-item ${podStatus}">
+                    <div class="pod-info">
+                        <span>Pod ${podId.substring(0, 8)}</span>
+                        ${rescheduledInfo}
+                        <span class="pod-details">CPU: ${pod.cpu_required}</span>
+                        <span class="pod-status">Status: ${pod.health_status}</span>
+                    </div>
+                    <button onclick="deletePod('${podId}')" class="delete-btn">Delete</button>
+                </div>
+            `;
+        }).join('');
         
         nodeElement.innerHTML = `
-            <h3>Node ${id}</h3>
+            <h3>Node ${id.substring(0, 8)}</h3>
             <div class="node-info">
                 <div class="info-item">
                     <strong>CPU</strong>

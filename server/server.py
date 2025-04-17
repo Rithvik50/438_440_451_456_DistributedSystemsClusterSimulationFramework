@@ -119,12 +119,44 @@ def stop_node(node_id):
             
             node = nodes[node_id]
             node.is_running = False
+            node.health_status = "Stopped"
+            
+            # Get pods that need to be rescheduled
+            pods_to_reschedule = node.pods.copy()
+            node.pods = []  # Clear pods from stopped node
             
             cmd = ["docker", "stop", node_id]
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode != 0:
                 return jsonify({"error": "Failed to stop node container"}), 500
+            
+            # Try to reschedule pods to other healthy nodes
+            with pods_lock:
+                for pod_id in pods_to_reschedule:
+                    pod = pods[pod_id]
+                    rescheduled = False
+                    
+                    # Try to find a healthy node with enough CPU
+                    for other_node_id, other_node in nodes.items():
+                        if (other_node_id != node_id and 
+                            other_node.health_status == "Healthy" and 
+                            other_node.is_running and 
+                            other_node.available_cpu >= pod.cpu_required):
+                            # Move pod to new node
+                            pod.node_id = other_node_id
+                            pod.last_updated = time.time()
+                            other_node.available_cpu -= pod.cpu_required
+                            other_node.pods.append(pod_id)
+                            rescheduled = True
+                            logger.info(f"Pod {pod_id} rescheduled from node {node_id} to node {other_node_id}")
+                            break
+                    
+                    # If pod couldn't be rescheduled, mark it as failed
+                    if not rescheduled:
+                        pod.status = "Failed"
+                        pod.health_status = "Unhealthy"
+                        logger.warning(f"Pod {pod_id} could not be rescheduled, marking as failed")
             
             logger.info(f"Node {node_id} stopped")
             return jsonify({"message": f"Node {node_id} stopped"}), 200

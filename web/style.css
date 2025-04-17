@@ -132,6 +132,10 @@ button:active {
     border-left: 4px solid var(--danger-color);
 }
 
+.node.stopped {
+    border-left: 4px solid var(--warning-color);
+}
+
 .node h3 {
     margin: 0 0 1rem 0;
     color: var(--gray-800);
@@ -210,16 +214,42 @@ button:active {
     background-color: var(--gray-100);
     border-radius: var(--radius);
     margin-bottom: 0.5rem;
+    border-left: 4px solid var(--gray-300);
 }
 
-.pod-item span {
+.pod-item.healthy {
+    border-left-color: var(--success-color);
+}
+
+.pod-item.unhealthy {
+    border-left-color: var(--danger-color);
+}
+
+.pod-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.pod-id {
     font-size: 0.875rem;
     color: var(--gray-800);
+    font-weight: 500;
+}
+
+.pod-status {
+    font-size: 0.75rem;
+    color: var(--gray-600);
 }
 
 .pod-item .delete-btn {
     padding: 0.25rem 0.75rem;
     font-size: 0.875rem;
+}
+
+.pod-item .delete-btn:disabled {
+    background-color: var(--gray-300);
+    cursor: not-allowed;
 }
 
 .heartbeat-monitor {

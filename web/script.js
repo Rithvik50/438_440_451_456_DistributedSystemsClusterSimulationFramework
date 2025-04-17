@@ -150,13 +150,21 @@ function displayNodes(nodes) {
         // Update heartbeat graph
         updateHeartbeatGraph(id, isActive);
         
-        // Create pods list
-        const podsList = node.pods.map(podId => `
-            <div class="pod-item">
-                <span>Pod ${podId}</span>
-                <button onclick="deletePod('${podId}')" class="delete-btn">Delete</button>
-            </div>
-        `).join('');
+        // Create pods list with status
+        const podsList = node.pods.map(podId => {
+            const pod = pods[podId];
+            const podStatus = pod ? pod.health_status : 'Unknown';
+            const podStatusClass = podStatus.toLowerCase();
+            return `
+                <div class="pod-item ${podStatusClass}">
+                    <div class="pod-info">
+                        <span class="pod-id">Pod ${podId}</span>
+                        <span class="pod-status">${podStatus}</span>
+                    </div>
+                    <button onclick="deletePod('${podId}')" class="delete-btn" ${!node.is_running ? 'disabled' : ''}>Delete</button>
+                </div>
+            `;
+        }).join('');
         
         nodeElement.innerHTML = `
             <h3>Node ${id}</h3>

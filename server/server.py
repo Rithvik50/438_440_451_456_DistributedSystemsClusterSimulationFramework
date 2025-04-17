@@ -155,72 +155,6 @@ def delete_node(node_id):
         logger.error(f"Error deleting node: {e}")
         return jsonify({"error": str(e)}), 500
 
-def find_node_first_fit(cpu_required):
-    """First-fit algorithm: Place pod on first node with sufficient resources"""
-    with nodes_lock:
-        for node_id, node in nodes.items():
-            if (node.health_status == "Healthy" and 
-                node.is_running and 
-                node.available_cpu >= cpu_required):
-                return node_id
-    return None
-
-def find_node_best_fit(cpu_required):
-    """Best-fit algorithm: Place pod on node with smallest sufficient space"""
-    best_node_id = None
-    smallest_remaining = float('inf')
-    
-    with nodes_lock:
-        for node_id, node in nodes.items():
-            if (node.health_status == "Healthy" and 
-                node.is_running and 
-                node.available_cpu >= cpu_required):
-                remaining = node.available_cpu - cpu_required
-                if remaining < smallest_remaining:
-                    smallest_remaining = remaining
-                    best_node_id = node_id
-    return best_node_id
-
-def find_node_worst_fit(cpu_required):
-    """Worst-fit algorithm: Place pod on node with largest available space"""
-    worst_node_id = None
-    largest_remaining = -1
-    
-    with nodes_lock:
-        for node_id, node in nodes.items():
-            if (node.health_status == "Healthy" and 
-                node.is_running and 
-                node.available_cpu >= cpu_required):
-                remaining = node.available_cpu - cpu_required
-                if remaining > largest_remaining:
-                    largest_remaining = remaining
-                    worst_node_id = node_id
-    return worst_node_id
-
-@app.route('/scheduler', methods=['GET'])
-def get_scheduler():
-    """Get current scheduling algorithm"""
-    return jsonify({"scheduler": scheduler}), 200
-
-@app.route('/scheduler', methods=['POST'])
-def set_scheduler():
-    """Set scheduling algorithm"""
-    try:
-        data = request.get_json()
-        new_scheduler = data.get('scheduler', '').lower()
-        
-        if new_scheduler not in ['first-fit', 'best-fit', 'worst-fit']:
-            return jsonify({"error": "Invalid scheduler. Must be one of: first-fit, best-fit, worst-fit"}), 400
-        
-        global scheduler
-        scheduler = new_scheduler
-        logger.info(f"Scheduling algorithm changed to: {scheduler}")
-        return jsonify({"message": f"Scheduling algorithm set to {scheduler}"}), 200
-        
-    except Exception as e:
-        logger.error(f"Error setting scheduler: {e}")
-        return jsonify({"error": str(e)}), 500
-
 @app.route('/pods', methods=['POST'])
 def launch_pod():
     try:
@@ -230,24 +164,17 @@ def launch_pod():
         if cpu_required <= 0:
             return jsonify({"error": "CPU required must be positive"}), 400
         
-        # Find a suitable node based on current scheduler
-        node_id = None
-        if scheduler == "first-fit":
-            node_id = find_node_first_fit(cpu_required)
-        elif scheduler == "best-fit":
-            node_id = find_node_best_fit(cpu_required)
-        elif scheduler == "worst-fit":
-            node_id = find_node_worst_fit(cpu_required)
-        
-        if node_id:
-            with nodes_lock:
-                node = nodes[node_id]
-                pod_id = str(uuid.uuid4())
-                pods[pod_id] = Pod(pod_id, cpu_required, node_id)
-                node.available_cpu -= cpu_required
-                node.pods.append(pod_id)
-                logger.info(f"Pod {pod_id} launched on node {node_id} using {scheduler} algorithm")
-                return jsonify({"message": f"Pod {pod_id} launched on node {node_id}"}), 201
+        # Find a suitable node
+        with nodes_lock:
+            for node_id, node in nodes.items():
+                if (node.health_status == "Healthy" and 
+                    node.is_running and 
+                    node.available_cpu >= cpu_required):
+                    pod_id = str(uuid.uuid4())
+                    pods[pod_id] = Pod(pod_id, cpu_required, node_id)
+                    node.available_cpu -= cpu_required
+                    node.pods.append(pod_id)
+                    return jsonify({"message": f"Pod {pod_id} launched on node {node_id}"}), 201
         
         return jsonify({"error": "No healthy nodes with sufficient CPU available"}), 400
         

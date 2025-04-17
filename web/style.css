@@ -210,41 +210,16 @@ button:active {
     background-color: var(--gray-100);
     border-radius: var(--radius);
     margin-bottom: 0.5rem;
-    border-left: 4px solid transparent;
 }
 
-.pod-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
+.pod-item span {
+    font-size: 0.875rem;
+    color: var(--gray-800);
 }
 
-.pod-running {
-    border-left-color: var(--success-color);
-}
-
-.pod-failed {
-    border-left-color: var(--danger-color);
-}
-
-.pod-rescheduled {
-    font-size: 0.75rem;
-    color: var(--warning-color);
-    font-weight: 500;
-    background-color: rgba(251, 188, 5, 0.1);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.pod-details {
-    font-size: 0.75rem;
-    color: var(--gray-600);
-}
-
-.pod-status {
-    font-size: 0.75rem;
-    color: var(--gray-600);
+.pod-item .delete-btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
 }
 
 .heartbeat-monitor {
@@ -334,27 +309,5 @@ footer {
     text-align: center;
     color: var(--gray-600);
     font-size: 0.875rem;
-}
-
-select {
-    width: 100%;
-    padding: 0.75rem;
-    margin: 0.5rem 0 1rem;
-    border: 1px solid var(--gray-300);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    background-color: white;
-    cursor: pointer;
-    transition: border-color 0.15s ease-in-out;
-}
-
-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
-}
-
-select:hover {
-    border-color: var(--primary-color);
 }
   

@@ -128,33 +128,13 @@ async function fetchNodes() {
     }
 }
 
-// Add function to fetch pod details
-async function fetchPods() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/pods`);
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching pods:', error);
-        return [];
-    }
-}
-
-// Update displayNodes to include pod details
-async function displayNodes(nodes) {
+function displayNodes(nodes) {
     const nodesContainer = document.getElementById('nodes');
     nodesContainer.innerHTML = '';
-
-    // Fetch pod details
-    const pods = await fetchPods();
-    const podsMap = {};
-    pods.forEach(pod => {
-        podsMap[pod.id] = pod;
-    });
 
     Object.entries(nodes).forEach(([id, node]) => {
         const nodeElement = document.createElement('div');
         nodeElement.className = `node ${node.health_status.toLowerCase()}`;
-        nodeElement.setAttribute('data-node-id', id);
         
         // Calculate time since last heartbeat
         const lastHeartbeat = new Date(node.last_heartbeat * 1000);
@@ -170,30 +150,16 @@ async function displayNodes(nodes) {
         // Update heartbeat graph
         updateHeartbeatGraph(id, isActive);
         
-        // Create pods list with detailed information
-        const podsList = node.pods.map(podId => {
-            const pod = podsMap[podId];
-            if (!pod) return '';
-
-            const podStatus = pod.status === "Running" ? "pod-running" : "pod-failed";
-            const rescheduledInfo = pod.last_updated > pod.created_at ? 
-                `<span class="pod-rescheduled">Rescheduled</span>` : '';
-            
-            return `
-                <div class="pod-item ${podStatus}">
-                    <div class="pod-info">
-                        <span>Pod ${podId.substring(0, 8)}</span>
-                        ${rescheduledInfo}
-                        <span class="pod-details">CPU: ${pod.cpu_required}</span>
-                        <span class="pod-status">Status: ${pod.health_status}</span>
-                    </div>
-                    <button onclick="deletePod('${podId}')" class="delete-btn">Delete</button>
-                </div>
-            `;
-        }).join('');
+        // Create pods list
+        const podsList = node.pods.map(podId => `
+            <div class="pod-item">
+                <span>Pod ${podId}</span>
+                <button onclick="deletePod('${podId}')" class="delete-btn">Delete</button>
+            </div>
+        `).join('');
         
         nodeElement.innerHTML = `
-            <h3>Node ${id.substring(0, 8)}</h3>
+            <h3>Node ${id}</h3>
             <div class="node-info">
                 <div class="info-item">
                     <strong>CPU</strong>
@@ -353,50 +319,6 @@ async function deletePod(podId) {
     }
 }
 
-// Add function to fetch current scheduler
-async function fetchScheduler() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/scheduler`);
-        const data = await response.json();
-        document.getElementById('scheduler').value = data.scheduler;
-    } catch (error) {
-        console.error('Error fetching scheduler:', error);
-    }
-}
-
-// Add function to change scheduler
-async function changeScheduler() {
-    const scheduler = document.getElementById('scheduler').value;
-    try {
-        const response = await fetch(`${API_BASE_URL}/scheduler`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ scheduler }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            alert(`Scheduling algorithm changed to ${data.scheduler}`);
-        } else {
-            const error = await response.json();
-            alert(`Failed to change scheduler: ${error.error}`);
-        }
-    } catch (error) {
-        console.error('Error changing scheduler:', error);
-        alert('Failed to change scheduler');
-    }
-}
-
-// Update the initial fetch to include scheduler
-async function initialFetch() {
-    await Promise.all([
-        fetchNodes(),
-        fetchScheduler()
-    ]);
-}
-
 // Start periodic updates
 setInterval(fetchNodes, 5000);
-initialFetch(); // Initial fetch
+fetchNodes(); // Initial fetch
